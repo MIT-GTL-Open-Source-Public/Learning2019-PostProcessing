@@ -19,8 +19,10 @@ __maintainer__ = "Prakash Manandhar"
 __email__ = "engineer.manandhar@gmail.com"
 __status__ = "Production"
 
-EXCEL_FILE = "C:/Learning2019Data/Waivers and Surveys - Learning 2019.xlsx"
+EXCEL_FILE = "~/Learning2019Data/Waivers and Surveys - Learning 2019.xlsx"
 EXCEL_SHEET = "Data"
+EXCEL_HEADER_ROWS = 5 # skip these rows for actual data
+EXCEL_ACTIVE_COL = ord('F') - ord('A') # column F, is active
 MYSQL_SEVER = "127.0.0.1"
 MYSQL_USER = "data_entry"
 MYSQL_PASS = ""
@@ -43,7 +45,7 @@ class Team:
         else:
             return False
 
-    def getStringID():
+    def getStringID(self):
         return day + session + room + condition + '-' + station
 
 class Participant:
@@ -54,12 +56,27 @@ class Participant:
 class ExcelProcessor:
     wb = None # workbook
     sheet = None # sheet
+    rows = None # all the rows
+    data_remaining = True
 
     def __init__(self):
         self.wb = xlrd.open_workbook(EXCEL_FILE)
         self.sheet = self.wb.sheet_by_name(EXCEL_SHEET)
+        self.rows = self.sheet.get_rows()
+        for i in range(EXCEL_HEADER_ROWS):
+            self.rows.__next__()
 
     def getNextParticipant(self):
+        try:
+            # find next "active" row
+            row = self.rows.__next__()
+            #print(row[EXCEL_ACTIVE_COL].value)
+            while(row[EXCEL_ACTIVE_COL].value != 1):
+                row = self.rows.__next__()
+                #print(row[EXCEL_ACTIVE_COL].value)
+            
+        except:
+            self.data_remaining = False 
         return
 
 class DataEntry:
@@ -71,7 +88,7 @@ class DataEntry:
         
     def enterAllData(self):
         exp_no = self.insertExperiment()
-        self.insertTeams(exp_no)
+        self.insertTeamsAndParticipants(exp_no)
 
     def insertExperiment(self):
         insert_experiment = (
@@ -91,6 +108,8 @@ class DataEntry:
         return exp_no
 
     def insertTeamsAndParticipants(self, exp_no):
+        self.excelP.getNextParticipant()
+
         return
 
 if __name__ == "__main__":
