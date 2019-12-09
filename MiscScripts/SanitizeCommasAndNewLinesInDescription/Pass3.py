@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Pass1.py: This script replaces commas in the description column and adds a Team-ID column.
+Pass3.py: This script replaces commas in the description column and adds a Team-ID column.
 
 This file was written to automate a very specific part of the project,
 and may only be generically useful as a template, not as a reusable

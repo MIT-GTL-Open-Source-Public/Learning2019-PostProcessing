@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-Pass1.py: This script replaces new-lines in the description column.
+Pass2.py: This script replaces new-lines in the description column.
 
 This file was written to automate a very specific part of the project,
 and may only be generically useful as a template, not as a reusable
