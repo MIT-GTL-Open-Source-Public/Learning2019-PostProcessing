@@ -30,6 +30,27 @@ import mysql.connector
 import argparse
 import xlrd
 
+class Team:
+    day = '' # M or T (Monday or Tuesday)
+    session = '' # S1, S2, S3 or S4
+    room = '' # R1 or R2
+    station = '' # 1, 2, 3, or 4
+    condition = '' # A, B, or C
+
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    def getStringID():
+        return day + session + room + condition + '-' + station
+
+class Participant:
+    team = None # team object
+    pre_survey  = '' # a string representing pre-survey data
+    post_survey = '' # a string representing post-survey data    
+
 class ExcelProcessor:
     wb = None # workbook
     sheet = None # sheet
@@ -37,6 +58,9 @@ class ExcelProcessor:
     def __init__(self):
         self.wb = xlrd.open_workbook(EXCEL_FILE)
         self.sheet = self.wb.sheet_by_name(EXCEL_SHEET)
+
+    def getNextParticipant(self):
+        return
 
 class DataEntry:
 
@@ -46,7 +70,8 @@ class DataEntry:
         self.excelP = excelP
         
     def enterAllData(self):
-        self.insertExperiment()
+        exp_no = self.insertExperiment()
+        self.insertTeams(exp_no)
 
     def insertExperiment(self):
         insert_experiment = (
@@ -63,9 +88,9 @@ class DataEntry:
         cnx.commit()
         cursor.close()
         cnx.close()
+        return exp_no
 
-    def __del__(self):
-        #self.cnx.close()
+    def insertTeamsAndParticipants(self, exp_no):
         return
 
 if __name__ == "__main__":
