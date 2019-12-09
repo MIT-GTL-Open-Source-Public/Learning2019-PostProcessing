@@ -6,9 +6,14 @@
  * Date: 2019-Dec-07
  */
 
+DROP TABLE UIEvent;
+DROP TABLE Participants;
+DROP TABLE Teams;
+DROP TABLE Experiments;
+
 CREATE TABLE `Experiments` (
   `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
-  `descripton` VARCHAR(2000)
+  `description` VARCHAR(2000)
 );
 
 CREATE TABLE `Teams` (
