@@ -6,10 +6,10 @@
  * Date: 2019-Dec-07
  */
 
-DROP TABLE UIEvent;
-DROP TABLE Participants;
-DROP TABLE Teams;
-DROP TABLE Experiments;
+DROP TABLE IF EXISTS UIEvent;
+DROP TABLE IF EXISTS Participants;
+DROP TABLE IF EXISTS Teams;
+DROP TABLE IF EXISTS Experiments;
 
 CREATE TABLE `Experiments` (
   `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
