@@ -96,6 +96,8 @@ CSV_MAP = {
     "T, S4, Station 7": "Masie_20191029_144241_7_p3.csv",
 }
 
+CSV_DATA_FOLDER = "~/Learning2019Data/SanitizedData/Processed-WithTeamID"
+
 MYSQL_SEVER = "127.0.0.1"
 MYSQL_USER = "data_entry"
 MYSQL_PASS = ""
@@ -103,7 +105,45 @@ MYSQL_DB = "Learning2019"
 
 import mysql.connector
 import argparse
-            
+import os
+import csv
+
+class UIEventDataEntry:
+
+    cnx = None # database connection
+
+    def enterAllData(self):
+        # iterate through teams
+        select_query = "SELECT id, day, session, station from Learning2019.Teams"
+        self.cnx = mysql.connector.connect(
+                        user=MYSQL_USER, password=MYSQL_PASS,
+                        host=MYSQL_SEVER,
+                        database=MYSQL_DB, use_pure=True)
+        cursor = self.cnx.cursor()
+        cursor.execute(select_query)
+        for (id, day, session, station) in cursor:
+            key = f"{day}, {session}, Station {station}"
+            print(f"Processing Team {id}: {key}")
+            self.insertUIEventsForTeam(id, key)
+
+        self.cnx.commit()
+        cursor.close()
+        self.cnx.close()
+        return
+
+    def insertUIEventsForTeam(self, team_id, team_key):
+        csv_file = CSV_MAP[team_key]
+        csv_fpath = os.path.join(CSV_DATA_FOLDER, csv_file)
+        csv_fpath = os.path.expanduser(csv_fpath)
+        with open(csv_fpath) as fp:
+            csv.register_dialect('MyDialect', quotechar='"', skipinitialspace=True, quoting=csv.QUOTE_NONE, lineterminator='\n', strict=True)
+            reader = csv.DictReader(fp, dialect='MyDialect')
+            for row in reader:
+                print(row)
+                #print(row['Team-ID'])
+                break
+        return
+
 if __name__ == "__main__":
     # The password is an external argument so that it doesn't need to be checked into 
     # public version control
@@ -111,3 +151,6 @@ if __name__ == "__main__":
     parser.add_argument('--pass')
     parsed_args = parser.parse_args()
     MYSQL_PASS = vars(parsed_args)['pass']
+
+    dE = UIEventDataEntry()
+    dE.enterAllData()
