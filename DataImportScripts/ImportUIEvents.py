@@ -131,6 +131,9 @@ class UIEventDataEntry:
         self.cnx.close()
         return
 
+    def insertUIEvent(self, team_id, row):
+        return
+
     def insertUIEventsForTeam(self, team_id, team_key):
         csv_file = CSV_MAP[team_key]
         csv_fpath = os.path.join(CSV_DATA_FOLDER, csv_file)
@@ -138,10 +141,11 @@ class UIEventDataEntry:
         with open(csv_fpath) as fp:
             csv.register_dialect('MyDialect', quotechar='"', skipinitialspace=True, quoting=csv.QUOTE_NONE, lineterminator='\n', strict=True)
             reader = csv.DictReader(fp, dialect='MyDialect')
+            i = 0
             for row in reader:
-                print(row)
-                #print(row['Team-ID'])
-                break
+                self.insertUIEvent(team_id, row)
+                i += 1
+            print (f"{i} events inserted into DB for team {team_id}: {team_key}.")
         return
 
 if __name__ == "__main__":
