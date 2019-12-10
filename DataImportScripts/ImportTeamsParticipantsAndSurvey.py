@@ -181,15 +181,38 @@ class DataEntry:
         cnx.close()
         return team_id
 
+    def insertParticipant(self, team_id, p):
+        insert_stmt = (
+            "INSERT INTO Learning2019.Participants "
+            "(id, team_id, chair, pre_survey, post_survey) "
+            "VALUES (%s, %s, %s, %s, %s)")
+        cnx = mysql.connector.connect(
+                        user=MYSQL_USER, password=MYSQL_PASS,
+                        host=MYSQL_SEVER,
+                        database=MYSQL_DB, use_pure=True)
+        cursor = cnx.cursor()
+        cursor.execute(insert_stmt, 
+            (0, team_id, p.chair, 
+             p.pre_survey, p.post_survey))
+        id = cursor.lastrowid
+        print(f"Participant ID {id} inserted into DB.")
+        cnx.commit()
+        cursor.close()
+        cnx.close()
+        return id
+
     def insertTeamsAndParticipants(self, exp_no):
         p = self.excelP.getNextParticipant()
         old_team = None
+        team_id = 0
         while p is not None:
             if old_team is None:
                 old_team = p.team
                 team_id = self.insertTeam(exp_no, p.team)
+            if old_team != p.team:
+                team_id = self.insertTeam(exp_no, p.team)
+            self.insertParticipant(team_id, p)
             
-
 if __name__ == "__main__":
     # The password is an external argument so that it doesn't need to be checked into 
     # public version control
