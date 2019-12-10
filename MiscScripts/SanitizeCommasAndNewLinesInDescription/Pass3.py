@@ -111,8 +111,6 @@ if __name__ == '__main__':
     }
 
     fname = sys.argv[1]
-    station = int(sys.argv[2])
-    period = int(sys.argv[3])
     fname_split = fname.split(".")
     team_id = fname_split[0]
     station = int(fname_split[0][-1])
