@@ -163,7 +163,7 @@ class DataEntry:
     def insertTeam(self, experiment, team):
         insert_team = (
             "INSERT INTO Learning2019.Teams "
-            "(id, experiment_id, day, session, room, station, condition) "
+            "(id, experiment_id, day, session, room, station, Teams.condition) "
             "VALUES (%s, %s, %s, %s, %s, %s, %s)")
         
         cnx = mysql.connector.connect(
@@ -171,12 +171,17 @@ class DataEntry:
                         host=MYSQL_SEVER,
                         database=MYSQL_DB, use_pure=True)
         cursor = cnx.cursor()
-        cursor.execute(insert_team, 
-            (0, experiment, team.day, team.session, 
-             team.room, team.station, team.condition))
-        team_id = cursor.lastrowid
-        print(f"Team ID {team_id} inserted into DB.")
-        cnx.commit()
+        try:
+            cursor.execute(insert_team, 
+                (0, experiment, team.day, team.session, 
+                team.room, str(int(team.station)), team.condition))
+            team_id = cursor.lastrowid
+            print(f"Team ID {team_id} inserted into DB.")
+            cnx.commit()
+        except:
+            print(f"Team insertion failed into DB.")
+            print(cursor.statement)
+            team_id = 0
         cursor.close()
         cnx.close()
         return team_id
@@ -211,7 +216,9 @@ class DataEntry:
                 team_id = self.insertTeam(exp_no, p.team)
             if old_team != p.team:
                 team_id = self.insertTeam(exp_no, p.team)
+                old_team = p.team
             self.insertParticipant(team_id, p)
+            p = self.excelP.getNextParticipant()
             
 if __name__ == "__main__":
     # The password is an external argument so that it doesn't need to be checked into 
