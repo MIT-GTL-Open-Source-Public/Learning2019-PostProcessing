@@ -119,7 +119,7 @@ class UIEventDataEntry:
                         user=MYSQL_USER, password=MYSQL_PASS,
                         host=MYSQL_SEVER,
                         database=MYSQL_DB, use_pure=True)
-        cursor = self.cnx.cursor()
+        cursor = self.cnx.cursor(buffered=True)
         cursor.execute(select_query)
         for (id, day, session, station) in cursor:
             key = f"{day}, {session}, Station {station}"
@@ -132,6 +132,20 @@ class UIEventDataEntry:
         return
 
     def insertUIEvent(self, team_id, row):
+        values = (0, team_id, row['Date'] + ' ' + row['Time'])
+        row_values = list(row.values())[5:]
+        for i in range(len(row_values)):
+            if type(row_values[i]) == str:
+                row_values[i] = row_values[i].strip(' "\'')
+                if len(row_values[i]) == 0:
+                    row_values[i] = None
+            if row_values[i] == 'true':
+                row_values[i] = True
+            elif row_values[i] == 'false':
+                row_values[i] = False
+        
+        values += tuple(row_values)
+
         insert_stmt = (
             "INSERT INTO Learning2019.UIEvents "
             "(id, team_id, timestamp, time_from_start, type, "
@@ -181,16 +195,25 @@ class UIEventDataEntry:
             "Team_Mix,"
             "Interaction,"
             "Nfloors"
-            ")"
+            ") "
             "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
                     "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
                     "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
                     "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
                     "%s, %s, %s, %s, %s"
             ")") # 45 columns
-        
 
-        return
+        cursor = self.cnx.cursor(buffered=True)
+        try:
+            #print(values)
+            cursor.execute(insert_stmt, values)
+            self.cnx.commit()
+        except mysql.connector.Error as err:
+            print("Something went wrong: {}".format(err))
+            print(f"UI Event insertion failed into DB.")
+            print(cursor.statement)
+
+        cursor.close()
 
     def insertUIEventsForTeam(self, team_id, team_key):
         csv_file = CSV_MAP[team_key]

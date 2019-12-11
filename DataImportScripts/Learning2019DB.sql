@@ -6,6 +6,7 @@
  * Date: 2019-Dec-07
  */
 
+DROP TABLE IF EXISTS UIEvents;
 DROP TABLE IF EXISTS UIEvent;
 DROP TABLE IF EXISTS Participants;
 DROP TABLE IF EXISTS Teams;
@@ -36,7 +37,7 @@ CREATE TABLE `Participants` (
   `post_survey` CHAR(8)
 );
 
-CREATE TABLE `UIEvent` (
+CREATE TABLE `UIEvents` (
   `id` INTEGER PRIMARY KEY AUTO_INCREMENT,
   `team_id` INTEGER,
    FOREIGN KEY (team_id) REFERENCES Teams(id),
