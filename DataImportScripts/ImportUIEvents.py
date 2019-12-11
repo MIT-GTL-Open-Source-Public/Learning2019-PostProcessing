@@ -132,6 +132,64 @@ class UIEventDataEntry:
         return
 
     def insertUIEvent(self, team_id, row):
+        insert_stmt = (
+            "INSERT INTO Learning2019.UIEvents "
+            "(id, team_id, timestamp, time_from_start, type, "
+            "b_1,"
+            "f_1,"
+            "tA_1,"
+            "tB_1,"
+            "tC_1,"
+
+            "b_2,"
+            "f_2,"
+            "tA_2,"
+            "tB_2,"
+            "tC_2,"
+
+            "b_3,"
+            "f_3,"
+            "tA_3,"
+            "tB_3,"
+            "tC_3,"
+
+            "b_4,"
+            "f_4,"
+            "tA_4,"
+            "tB_4,"
+            "tC_4,"
+
+            "b_5,"
+            "f_5,"
+            "tA_5,"
+            "tB_5,"
+            "tC_5,"
+
+            "b_6,"
+            "f_6,"
+            "tA_6,"
+            "tB_6,"
+            "tC_6,"
+
+            "SimulationID,"
+            "Summary,"
+            "Description,"
+            "TradeSpace_X_AXIS,"
+            "TradeSpace_Y_AXIS,"
+            "Cost,"
+            "Walking,"
+            "Team_Mix,"
+            "Interaction,"
+            "Nfloors"
+            ")"
+            "VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                    "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                    "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                    "%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, "
+                    "%s, %s, %s, %s, %s"
+            ")") # 45 columns
+        
+
         return
 
     def insertUIEventsForTeam(self, team_id, team_key):
