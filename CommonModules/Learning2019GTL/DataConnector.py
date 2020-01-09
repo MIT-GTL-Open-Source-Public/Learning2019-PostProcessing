@@ -22,6 +22,10 @@ MYSQL_USER = "data_entry"
 MYSQL_PASS = "Sajil0" # change password to one you used
 MYSQL_DB = "Learning2019"
 
+class UIEvent:
+    
+
+
 class Team:
     day = '' # M or T (Monday or Tuesday)
     session = '' # S1, S2, S3 or S4
@@ -55,4 +59,26 @@ class Team:
         cursor.close()
         self.cnx.close()
         return cond_ret
+
+    def getTeamByID(self, team_id):
+        query = "SELECT Teams.id, Teams.day, Teams.session, Teams.room, Teams.station, Teams.condition" + \
+                " FROM Learning2019.Teams WHERE Teams.id = %s"
+        self.cnx = mysql.connector.connect(
+                        user=MYSQL_USER, password=MYSQL_PASS,
+                        host=MYSQL_SEVER,
+                        database=MYSQL_DB, use_pure=True) # change username and password to one you use
+        cursor = self.cnx.cursor(buffered=True)
+        cursor.execute(query, (team_id, ))
+        for (row_id, day, session, room, station, condition) in cursor:
+            if row_id == team_id:
+                self.day = day
+                self.session = session
+                self.room = room
+                self.station = station
+                self.condition = condition
+                break
+        self.cnx.commit()
+        cursor.close()
+        self.cnx.close()
+        
 
