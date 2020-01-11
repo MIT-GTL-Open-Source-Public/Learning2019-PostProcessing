@@ -25,6 +25,8 @@ MYSQL_DB = "Learning2019"
 class UISimulationResult:
     interaction_score = 0.0
     total_cost = 0.0
+    diversity_score = 0.0
+    walking_time = 0.0
 
 class Team:
     day = '' # M or T (Monday or Tuesday)
@@ -90,7 +92,7 @@ class Team:
         self.cnx.close()
     
     def getSimulationUIEventsByTeamID(self, team_id):
-        query = "SELECT Cost, Interaction" + \
+        query = "SELECT Cost, Interaction, Team_Mix, Walking" + \
                     " FROM Learning2019.UIEvents WHERE team_id = %s " +\
                     " AND type = 'run_simulation'"
         self.cnx = mysql.connector.connect(
@@ -100,10 +102,12 @@ class Team:
         cursor = self.cnx.cursor(buffered=True)
         cursor.execute(query, (team_id, ))
         ui_events = list()
-        for (cost, interaction) in cursor:
+        for (cost, interaction, diversity_score, walking_time) in cursor:
             event = UISimulationResult()
             event.interaction_score = interaction
             event.total_cost = cost
+            event.diversity_score = diversity_score
+            event.walking_time = walking_time
             ui_events.append(event)
         self.cnx.commit()
         cursor.close()
