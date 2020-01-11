@@ -22,9 +22,9 @@ MYSQL_USER = "data_entry"
 MYSQL_PASS = "Sajil0" # change password to one you used
 MYSQL_DB = "Learning2019"
 
-class UIEvent:
-    
-
+class UISimulationResult:
+    interaction_score = 0.0
+    total_cost = 0.0
 
 class Team:
     day = '' # M or T (Monday or Tuesday)
@@ -80,5 +80,24 @@ class Team:
         self.cnx.commit()
         cursor.close()
         self.cnx.close()
-        
-
+    
+    def getSimulationUIEventsByTeamID(self, team_id):
+        query = "SELECT Cost, Interaction" + \
+                    " FROM Learning2019.UIEvents WHERE team_id = %s " +\
+                    " AND type = 'run_simulation'"
+        self.cnx = mysql.connector.connect(
+                        user=MYSQL_USER, password=MYSQL_PASS,
+                        host=MYSQL_SEVER,
+                        database=MYSQL_DB, use_pure=True) # change username and password to one you use
+        cursor = self.cnx.cursor(buffered=True)
+        cursor.execute(query, (team_id, ))
+        ui_events = list()
+        for (cost, interaction) in cursor:
+            event = UISimulationResult()
+            event.interaction_score = interaction
+            event.total_cost = cost
+            ui_events.append(event)
+        self.cnx.commit()
+        cursor.close()
+        self.cnx.close()
+        return ui_events
