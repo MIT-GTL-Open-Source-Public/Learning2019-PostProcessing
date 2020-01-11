@@ -32,6 +32,12 @@ class Team:
     room = '' # R1 or R2
     station = '' # 1, 2, 3, or 4
     condition = '' # A, B, or C
+    team_id = -1 # team id in database
+
+    def __str__(self):
+        return f" Day: {self.day}, Session: {self.session}," +\
+               f" Room: {self.room}, Station: {self.station}" +\
+               f" Condition: {self.condition}, DbTeamID: {self.team_id}"
     
     def __eq__(self, other):
         if isinstance(other, self.__class__):
@@ -46,19 +52,20 @@ class Team:
     
     def getCondition(self, team_string):
         t = team_string.split(', ')
-        query = "SELECT Teams.condition FROM TEAMS WHERE day = %s AND session = %s AND station = %s"
+        query = "SELECT id, Teams.condition FROM TEAMS WHERE day = %s AND session = %s AND station = %s"
         self.cnx = mysql.connector.connect(
                         user=MYSQL_USER, password=MYSQL_PASS,
                         host=MYSQL_SEVER,
                         database=MYSQL_DB, use_pure=True) # change username and password to one you use
         cursor = self.cnx.cursor(buffered=True)
         cursor.execute(query, (t[0], t[1], t[2][-1]))
-        for (condition) in cursor:
-            cond_ret = condition
+        for (id, condition) in cursor:
+            self.team_id = id
+            self.condition = condition
         self.cnx.commit()
         cursor.close()
         self.cnx.close()
-        return cond_ret
+        return self.condition
 
     def getTeamByID(self, team_id):
         query = "SELECT Teams.id, Teams.day, Teams.session, Teams.room, Teams.station, Teams.condition" + \
@@ -71,6 +78,7 @@ class Team:
         cursor.execute(query, (team_id, ))
         for (row_id, day, session, room, station, condition) in cursor:
             if row_id == team_id:
+                self.team_id = team_id
                 self.day = day
                 self.session = session
                 self.room = room
