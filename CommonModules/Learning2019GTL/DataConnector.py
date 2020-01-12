@@ -22,11 +22,31 @@ MYSQL_USER = "data_entry"
 MYSQL_PASS = "Sajil0" # change password to one you used
 MYSQL_DB = "Learning2019"
 
+import numpy as np
+
 class UISimulationResult:
+    buildings = [False] * 6
+    floors = [0] * 6
+    tA = [0] * 6
+    tB = [0] * 6
+    tC = [0] * 6
+    
     interaction_score = 0.0
     total_cost = 0.0
     diversity_score = 0.0
     walking_time = 0.0
+
+    def getDensity(self):
+        density = np.zeros(6)
+        SQFT_PER_FLOOR = 50e3
+        for i in range(6):
+            if self.buildings[i]:
+                area       = SQFT_PER_FLOOR*self.floors[i]
+                population = self.tA[i] + self.tB[i] + self.tC[i]
+                density[i] = area/population 
+            else:
+                density[i] = -1.0
+        return density
 
 class Team:
     day = '' # M or T (Monday or Tuesday)
@@ -92,7 +112,13 @@ class Team:
         self.cnx.close()
     
     def getSimulationUIEventsByTeamID(self, team_id):
-        query = "SELECT Cost, Interaction, Team_Mix, Walking" + \
+        query = "SELECT Cost, Interaction, Team_Mix, Walking," + \
+                    " b_1, f_1, tA_1, tB_1, tC_1," + \
+                    " b_2, f_2, tA_2, tB_2, tC_2," + \
+                    " b_3, f_3, tA_3, tB_3, tC_3," + \
+                    " b_4, f_4, tA_4, tB_4, tC_4," + \
+                    " b_5, f_5, tA_5, tB_5, tC_5," + \
+                    " b_6, f_6, tA_6, tB_6, tC_6 " + \
                     " FROM Learning2019.UIEvents WHERE team_id = %s " +\
                     " AND type = 'run_simulation'"
         self.cnx = mysql.connector.connect(
@@ -102,14 +128,45 @@ class Team:
         cursor = self.cnx.cursor(buffered=True)
         cursor.execute(query, (team_id, ))
         ui_events = list()
-        for (cost, interaction, diversity_score, walking_time) in cursor:
+        for (cost, interaction, diversity_score, walking_time,
+                 b_1, f_1, tA_1, tB_1, tC_1,
+                 b_2, f_2, tA_2, tB_2, tC_2,
+                 b_3, f_3, tA_3, tB_3, tC_3,
+                 b_4, f_4, tA_4, tB_4, tC_4,
+                 b_5, f_5, tA_5, tB_5, tC_5,
+                 b_6, f_6, tA_6, tB_6, tC_6) in cursor:
             event = UISimulationResult()
             event.interaction_score = interaction
             event.total_cost = cost
             event.diversity_score = diversity_score
             event.walking_time = walking_time
+            event.buildings = [b_1, b_2, b_3, b_4, b_5, b_6]
+            event.floors = [f_1, f_2, f_3, f_4, f_5, f_6]   
+            event.tA = [tA_1, tA_2, tA_3, tA_4, tA_5, tA_6]   
+            event.tB = [tB_1, tB_2, tB_3, tB_4, tB_5, tB_6]   
+            event.tC = [tC_1, tC_2, tC_3, tC_4, tC_5, tC_6]   
+ 
             ui_events.append(event)
         self.cnx.commit()
         cursor.close()
         self.cnx.close()
         return ui_events
+
+    def getSimulationUIEventsByTeamIDBetweenDensities(self, 
+        team_id, minmax_densities):
+        ui_events_all = self.getSimulationUIEventsByTeamID(team_id)
+        ui_events_ret = []
+        for ui_event in ui_events_all:
+            density = ui_event.getDensity()
+            densityCorrect = True
+            for i in range(6):
+                if ((density[i] < minmax_densities[0]) or \
+                   (density[i] > minmax_densities[1])) and \
+                   (density[i] > 0.0):
+                        densityCorrect = False
+                        break
+            if densityCorrect:
+                ui_events_ret.append(ui_event)
+        return ui_events_ret
+        
+
