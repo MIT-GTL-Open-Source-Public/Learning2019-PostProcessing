@@ -21,6 +21,7 @@ MYSQL_SEVER = "127.0.0.1"
 MYSQL_USER = "data_entry"
 MYSQL_PASS = "Sajil0" # change password to one you used
 MYSQL_DB = "Learning2019"
+MYSQL_AUTH = "mysql_native_password"
 
 import numpy as np
 
@@ -78,7 +79,8 @@ class Team:
         self.cnx = mysql.connector.connect(
                         user=MYSQL_USER, password=MYSQL_PASS,
                         host=MYSQL_SEVER,
-                        database=MYSQL_DB, use_pure=True) # change username and password to one you use
+                        database=MYSQL_DB, use_pure=True,
+                        auth_plugin=MYSQL_AUTH) # change username and password to one you use
         cursor = self.cnx.cursor(buffered=True)
         cursor.execute(query, (t[0], t[1], t[2][-1]))
         for (id, condition) in cursor:
@@ -95,7 +97,8 @@ class Team:
         self.cnx = mysql.connector.connect(
                         user=MYSQL_USER, password=MYSQL_PASS,
                         host=MYSQL_SEVER,
-                        database=MYSQL_DB, use_pure=True) # change username and password to one you use
+                        database=MYSQL_DB, use_pure=True,
+                        auth_plugin=MYSQL_AUTH) # change username and password to one you use
         cursor = self.cnx.cursor(buffered=True)
         cursor.execute(query, (team_id, ))
         for (row_id, day, session, room, station, condition) in cursor:
@@ -124,7 +127,8 @@ class Team:
         self.cnx = mysql.connector.connect(
                         user=MYSQL_USER, password=MYSQL_PASS,
                         host=MYSQL_SEVER,
-                        database=MYSQL_DB, use_pure=True) # change username and password to one you use
+                        database=MYSQL_DB, use_pure=True,
+                        auth_plugin=MYSQL_AUTH) # change username and password to one you use
         cursor = self.cnx.cursor(buffered=True)
         cursor.execute(query, (team_id, ))
         ui_events = list()
