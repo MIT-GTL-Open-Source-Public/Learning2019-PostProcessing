@@ -49,6 +49,9 @@ class UISimulationResult:
                 density[i] = -1.0
         return density
 
+    def getTotalPopulation(self):
+        return np.sum(self.tA) + np.sum(self.tB) + np.sum(self.tC)
+
 class Team:
     day = '' # M or T (Monday or Tuesday)
     session = '' # S1, S2, S3 or S4
@@ -155,6 +158,23 @@ class Team:
         cursor.close()
         self.cnx.close()
         return ui_events
+
+    def getSimulationUIEventsByTeamID_TotalPopulationDensityConstraint(self,
+        team_id, total_population, min_density):
+        ui_events_all = self.getSimulationUIEventsByTeamID(team_id)
+        ui_events_ret = []
+        for ui_event in ui_events_all:
+            density = ui_event.getDensity()
+            densityCorrect = True
+            for i in range(6):
+                if ((density[i] < min_density) and \
+                    (density[i] > 0.0)):
+                        densityCorrect = False
+                        break
+            if ( densityCorrect ) and \
+               ( ui_event.getTotalPopulation() == total_population ):
+                ui_events_ret.append(ui_event)
+        return ui_events_ret
 
     def getSimulationUIEventsByTeamIDBetweenDensities(self, 
         team_id, minmax_densities):
