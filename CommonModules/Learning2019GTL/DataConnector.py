@@ -44,7 +44,10 @@ class UISimulationResult:
             if self.buildings[i]:
                 area       = SQFT_PER_FLOOR*self.floors[i]
                 population = self.tA[i] + self.tB[i] + self.tC[i]
-                density[i] = area/population 
+                if population == 0:
+                    density[i] = -1.0
+                else:
+                    density[i] = area/population 
             else:
                 density[i] = -1.0
         return density
