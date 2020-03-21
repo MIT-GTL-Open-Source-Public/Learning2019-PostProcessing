@@ -11,7 +11,7 @@ DROP PROCEDURE IF EXISTS AddComputeInputVector;
 DELIMITER $$
  
 CREATE PROCEDURE AddComputeInputVector(
-    IN  input_vector CHAR(27),
+    IN  input_vector CHAR(33),
     IN  input_wave   INTEGER,
     OUT already_exists BOOLEAN
 ) 

@@ -24,6 +24,11 @@ import java.text.DecimalFormat;
 import java.util.Random;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.time.Duration;
+import java.time.Instant;
+import java.sql.CallableStatement;
 
 class Learning2019InputVector {
     static final char MAX_BUILDINGS = 6;
@@ -123,6 +128,36 @@ class Learning2019InputVector {
 
 public class Learning2019InputVectorGen {
 
+    public static void run_iterations(Connection conn, int run_minutes, int wave)
+    throws SQLException
+    {
+        final Instant start = Instant.now();
+        Duration timeElapsed;
+        
+        System.out.println("");
+        int num_vectors = 0;
+        do {
+            Learning2019InputVector vI = Learning2019InputVector.getRandomValid();
+            String vS = vI.getUniqueString();
+            System.out.print("\rVector: " + vS);
+            CallableStatement cStmt = conn.prepareCall(
+            "{call Learning2019.AddComputeInputVector(?, ?, ?)}");
+            cStmt.setString(1, vS);
+            cStmt.setInt(2, wave);
+            cStmt.registerOutParameter(3, Types.BOOLEAN);
+            cStmt.execute();
+            boolean exists = cStmt.getBoolean(3);
+            if (exists) num_vectors++;
+            Instant end = Instant.now();
+            timeElapsed = Duration.between(start, end);
+            System.out.print("; "  + num_vectors + 
+                " vectors generated in: " 
+                + timeElapsed.toMillis() + " milliseconds" +
+                " (" + timeElapsed.toMinutes() + " minutes)");
+        } while (timeElapsed.toMinutes() < run_minutes);
+        System.out.println("");
+    }
+
     public static void main(String[] args) {
         if (args.length != 5) {
             System.out.println("Usage is: java -cp mysql-connector-java-8.0.19.jar:. Learning2019InputVectorGen minutes wave server username password");
@@ -140,15 +175,14 @@ public class Learning2019InputVectorGen {
         System.out.println("Connecting to " + server + " ...");
         try {
             Connection conn =
-                DriverManager.getConnection(server, uname, pass);
-
+                DriverManager.getConnection(
+                    server + "?" + "noAccessToProcedureBodies = true", uname, pass);
+            run_iterations(conn, run_minutes, wave);
         } catch (Exception ex) {
             // handle any errors
             System.out.println("SQLException: " + ex.getMessage());
         }
-        Learning2019InputVector vI = Learning2019InputVector.getRandomValid();
-        // Prints "Hello, World" to the terminal window.
-        System.out.println("Vector: " + vI.getUniqueString() + " " + vI.isValid());
+       
     }
 
 }

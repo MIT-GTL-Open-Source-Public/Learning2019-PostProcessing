@@ -9,7 +9,7 @@
 DROP TABLE IF EXISTS ComputeVector;
 
 CREATE TABLE ComputeVector (
-  input_vector CHAR(27) PRIMARY KEY,
+  input_vector CHAR(33) PRIMARY KEY,
   compute_status BIT(2) NOT NULL, /* 0 == No, 1 == computing, 2 == computed */
   input_wave INTEGER, /* for easier selection of computed data, 0 == human teams all */
   compute_id INTEGER, /* a unique ID that signifies, which run created this compute */
