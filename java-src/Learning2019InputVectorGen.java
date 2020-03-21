@@ -138,7 +138,8 @@ public class Learning2019InputVectorGen {
         int num_vectors = 0;
 
         CallableStatement cStmt = conn.prepareCall(
-            "{call Learning2019.AddComputeInputVector(?, " + wave + ")}");
+            "INSERT INTO Learning2019.ComputeVector" +
+            "(input_vector, compute_status, input_wave) VALUES (?, 0, " + wave + ")");
         int batch_since_last = 0;
         do {
             Learning2019InputVector vI = Learning2019InputVector.getRandomValid();
@@ -148,7 +149,7 @@ public class Learning2019InputVectorGen {
             cStmt.addBatch();
             num_vectors++;
             batch_since_last++;
-            if(batch_since_last > 100) {
+            if(batch_since_last > 249) {
                 cStmt.executeLargeBatch();
                 batch_since_last = 0;
             }
@@ -159,7 +160,7 @@ public class Learning2019InputVectorGen {
                 + timeElapsed.toMillis() + " milliseconds" +
                 " (" + timeElapsed.toMinutes() + " minutes)");
         } while (timeElapsed.toMinutes() < run_minutes);
-        cStmt.executeBatch();
+        cStmt.executeLargeBatch();
         cStmt.close();
         System.out.println("");
     }
@@ -182,7 +183,9 @@ public class Learning2019InputVectorGen {
         try {
             Connection conn =
                 DriverManager.getConnection(
-                    server + "?" + "noAccessToProcedureBodies = true", uname, pass);
+                    server + "?" 
+                    + "noAccessToProcedureBodies = true" 
+                    + "&rewriteBatchedStatements = true", uname, pass);
             run_iterations(conn, run_minutes, wave);
             conn.close();
         } catch (Exception ex) {
