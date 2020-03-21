@@ -1,5 +1,29 @@
+/*
+Copyright (c) 2020 Prakash Manandhar
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 import java.text.DecimalFormat; 
 import java.util.Random;
+import java.sql.Connection;
+import java.sql.DriverManager;
 
 class Learning2019InputVector {
     static final char MAX_BUILDINGS = 6;
@@ -98,7 +122,30 @@ class Learning2019InputVector {
 }
 
 public class Learning2019InputVectorGen {
+
     public static void main(String[] args) {
+        if (args.length != 5) {
+            System.out.println("Usage is: java -cp mysql-connector-java-8.0.19.jar:. Learning2019InputVectorGen minutes wave server username password");
+            System.out.println("    minutes: how many minutes to run this program");
+            System.out.println("    wave: the input generation wave");
+            System.out.println("    server, username, password: MySQL database parameters");
+            System.exit(0);
+        }
+        int run_minutes = Integer.parseInt(args[0]);
+        int wave = Integer.parseInt(args[1]);
+        String server = args[2];
+        String uname  = args[3];
+        String pass   = args[4];
+        System.out.println("Generating inputs for " + run_minutes + " minutes [wave " + wave + "] ...");
+        System.out.println("Connecting to " + server + " ...");
+        try {
+            Connection conn =
+                DriverManager.getConnection(server, uname, pass);
+
+        } catch (Exception ex) {
+            // handle any errors
+            System.out.println("SQLException: " + ex.getMessage());
+        }
         Learning2019InputVector vI = Learning2019InputVector.getRandomValid();
         // Prints "Hello, World" to the terminal window.
         System.out.println("Vector: " + vI.getUniqueString() + " " + vI.isValid());
