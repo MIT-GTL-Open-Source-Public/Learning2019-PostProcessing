@@ -7,12 +7,6 @@ import java.util.Arrays;
 public class TestCalcMasie {
     
     public static void main(String[] args) {
-		int popSize = 10000;                 // %number of people on the site 
-		double hFloor = 15;                 // %height of one floor/storey, in ft
-		int popRed = 5000;                  // %number of people on Red team
-		int popBlue = 1500;                  // %number of people on Blue team
-		int popGreen = 3500;                 // %number of people on Green team
-		
         List<Boolean> activeBuildings = List.of(true, true, true, true, true, true);
 		List<Integer> numberOfFloors  = List.of(5, 3, 3, 3, 3, 3);
 
