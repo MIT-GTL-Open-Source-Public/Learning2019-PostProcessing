@@ -47,7 +47,7 @@ class Learning2019InputVector {
         for (int j = 0; j < NUM_TEAMS; j++) {
             for (int i = 0; i < NUM_BUILDINGS; i++) {
                 if( floors[i] != 0 ) {
-                    teamRatios[j][i] = getRandomNumberInRange(1, MAX_RATIOS);
+                    teamRatios[j][i] = getRandomNumberInRange(0, MAX_RATIOS);
                 }
             }
         }
