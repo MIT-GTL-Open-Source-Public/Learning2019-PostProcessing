@@ -1,8 +1,6 @@
 import edu.mit.gtl.masie.analysis.CalcMasie;
 import edu.mit.gtl.masie.analysis.MorphologicalMatrix;
 import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public class TestCalcMasie {
     

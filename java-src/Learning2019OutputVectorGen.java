@@ -30,25 +30,83 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
 
+import edu.mit.gtl.masie.analysis.CalcMasie;
+import edu.mit.gtl.masie.analysis.MorphologicalMatrix;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.HashMap;
+
 public class Learning2019OutputVectorGen {
 
-    static final int BATCH_SIZE = 100; // number of inputs to work on at a time
+    static final int BATCH_SIZE = 10; // number of inputs to work on at a time
     Connection conn;
     int wave, compute_id;
-
+    
     public Learning2019OutputVectorGen(Connection conn, int wave, int compute_id) {
         this.conn = conn;
         this.wave = wave;
         this.compute_id = compute_id;
     }
 
-    private void select_batch()
+    private MorphologicalMatrix get_morph_matrix(String vec)
+    {
+        Learning2019InputVector iVec = new Learning2019InputVector(vec);
+        assert iVec.isValid(): "Invalid Input Vector";
+        List<Boolean> activeBuildings = 
+            new ArrayList<Boolean>(
+                Collections.nCopies(Learning2019InputVector.NUM_BUILDINGS, false)); 
+        List<Integer> numberOfFloors = 
+            new ArrayList<Integer>(
+                Collections.nCopies(Learning2019InputVector.NUM_BUILDINGS, 0));
+        
+        List<Integer> redTeamAllocation = 
+            new ArrayList<Integer>(
+                Collections.nCopies(Learning2019InputVector.NUM_BUILDINGS, 0));
+        List<Integer> greenTeamAllocation = 
+            new ArrayList<Integer>(
+                Collections.nCopies(Learning2019InputVector.NUM_BUILDINGS, 0));
+        List<Integer> blueTeamAllocation = 
+            new ArrayList<Integer>(
+                Collections.nCopies(Learning2019InputVector.NUM_BUILDINGS, 0));
+
+        for (int i = 0; i < Learning2019InputVector.NUM_BUILDINGS; i++) {
+            activeBuildings.set(i, iVec.floors[i] > 0);
+            numberOfFloors.set(i, iVec.floors[i]);
+            redTeamAllocation.set(i, iVec.teamAllocations[0][i]);
+            greenTeamAllocation.set(i, iVec.teamAllocations[1][i]);
+            blueTeamAllocation.set(i, iVec.teamAllocations[2][i]);
+        }    
+		
+		return new MorphologicalMatrix(activeBuildings, numberOfFloors,
+	            redTeamAllocation, greenTeamAllocation, blueTeamAllocation);
+    }
+
+    private void udpate_vector(String vec, ResultSet rs)
+    throws SQLException
+    {
+        System.out.print("\rUpdating: " + vec); 
+        rs.updateInt("compute_id", compute_id);
+        MorphologicalMatrix matrix = get_morph_matrix(vec);
+        CalcMasie calc = new CalcMasie(matrix);
+        calc.run();
+        HashMap<String, Float> results = calc.getResults();
+        rs.updateInt("compute_status", 2);
+        rs.updateFloat("cost", results.get("Total Cost"));
+        rs.updateFloat("team_mix", results.get("Team Mix Index"));
+        rs.updateFloat("interaction_score", results.get("Interaction Score"));
+        rs.updateFloat("walking_time", results.get("Walking Time"));
+        rs.updateRow();
+    }
+
+    private void run_batch()
     throws SQLException
     {
         try {
-            conn.setAutoCommit(false);
             String sql = 
-                "SELECT input_vector, compute_status, compute_id " +
+                "SELECT input_vector, compute_status, compute_id, " +
+                "cost, team_mix, interaction_score, walking_time " +
                 "FROM Learning2019.ComputeVector " +
                 "WHERE input_wave = " + wave + " AND COMPUTE_STATUS = 0 " +
                 "LIMIT " + BATCH_SIZE + " FOR UPDATE";
@@ -58,19 +116,13 @@ public class Learning2019OutputVectorGen {
             ResultSet rs = ps.executeQuery();
             while(rs.next()){
                 String vec = rs.getString("input_vector");
-                System.out.println("Updating " + vec); 
-                rs.updateInt("compute_status", 1);
-                rs.updateInt("compute_id", compute_id);
-                rs.updateRow();
+                udpate_vector(vec, rs);
             }
             rs.close();
             ps.close();
-            // if everything is OK, commit the transaction
-            conn.commit();    
         } catch(SQLException e) {
             // in case of exception, rollback the transaction
-            conn.rollback();
-            System.out.println("SQLException: " + e.getMessage());
+            System.out.println("\n\nSQLException: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -78,7 +130,21 @@ public class Learning2019OutputVectorGen {
     public void run_iterations(int run_minutes)
     throws SQLException
     {
-        
+        final Instant start = Instant.now();
+        Duration timeElapsed;
+        long num_vectors = 0;
+        System.out.println("Running Iterations...");
+        do {
+            run_batch();
+            num_vectors += BATCH_SIZE;
+            Instant end = Instant.now();
+            timeElapsed = Duration.between(start, end);
+            System.out.print("; "  + num_vectors + 
+                " vectors processed in: " 
+                + timeElapsed.toMillis() + " milliseconds" +
+                " (" + timeElapsed.toMinutes() + " minutes)");
+        } while (timeElapsed.toMinutes() < run_minutes);
+        System.out.println("");
     }
 
     public static void main(String[] args) {
@@ -108,8 +174,7 @@ public class Learning2019OutputVectorGen {
                     + "&rewriteBatchedStatements = true", uname, pass);
             Learning2019OutputVectorGen vGen =
                  new Learning2019OutputVectorGen(conn, wave, compute_id);
-            //vGen.run_iterations(run_minutes);
-            vGen.select_batch();
+            vGen.run_iterations(run_minutes);
             conn.close();
         } catch (Exception ex) {
             // handle any errors

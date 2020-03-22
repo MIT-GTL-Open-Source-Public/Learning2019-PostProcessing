@@ -39,6 +39,38 @@ class Learning2019InputVector {
     int teamRatios[][]      = new int[NUM_TEAMS][NUM_BUILDINGS];
     int teamAllocations[][] = new int[NUM_TEAMS][NUM_BUILDINGS];
 
+    // empty constructor needed for random generator
+    public Learning2019InputVector() { 
+        for (int i = 0; i < NUM_BUILDINGS; i++) {
+            floors[i] = getRandomNumberInRange(0, MAX_FLOORS); 
+        }
+        for (int j = 0; j < NUM_TEAMS; j++) {
+            for (int i = 0; i < NUM_BUILDINGS; i++) {
+                if( floors[i] != 0 ) {
+                    teamRatios[j][i] = getRandomNumberInRange(1, MAX_RATIOS);
+                }
+            }
+        }
+    }
+
+    // creates object from string vector representation
+    // reverse of getUniqueString
+    public Learning2019InputVector(String vector) {
+        int index = 0;
+        for(int i = 0; i < NUM_BUILDINGS; i++) {
+            floors[i] = Integer.parseInt(vector.substring(index, index+2));
+            index += 2;
+        }
+        for (int j = 0; j < NUM_TEAMS; j++) {
+            index++; // skip -
+            for(int i = 0; i < NUM_BUILDINGS; i++) {
+                teamRatios[j][i] = Integer.parseInt(vector.substring(index, index+1));
+                index++;
+            }
+        }
+        calculateAllocations();
+    }
+
     private void calculateAllocations() {
         for(int j = 0; j < NUM_TEAMS; j++) {
             int total_ratio = 0;
@@ -64,26 +96,10 @@ class Learning2019InputVector {
 		return r.nextInt((max - min) + 1) + min;
 	}
 
-    private static Learning2019InputVector getRandom() {
-        Learning2019InputVector vI = new Learning2019InputVector();
-        for (int i = 0; i < NUM_BUILDINGS; i++) {
-            vI.floors[i] = getRandomNumberInRange(0, MAX_FLOORS); 
-        }
-        for (int j = 0; j < NUM_TEAMS; j++) {
-            for (int i = 0; i < NUM_BUILDINGS; i++) {
-                if(vI.floors[i] != 0) {
-                    vI.teamRatios[j][i] = getRandomNumberInRange(1, MAX_RATIOS);
-                }
-            }
-        }
-        return vI;
-    }
-
-
     public static Learning2019InputVector getRandomValid() {
-        Learning2019InputVector vI = Learning2019InputVector.getRandom();
+        Learning2019InputVector vI = new Learning2019InputVector();
         while ( ! vI.isValid() ) {
-            vI = Learning2019InputVector.getRandom();
+            vI = new Learning2019InputVector();
         }
         return vI;
     }
