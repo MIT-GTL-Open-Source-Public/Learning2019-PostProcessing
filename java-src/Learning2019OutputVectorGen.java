@@ -86,12 +86,14 @@ public class Learning2019OutputVectorGen {
     private void udpate_vector(String vec, ResultSet rs)
     throws SQLException
     {
-        System.out.print("\rUpdating: " + vec); 
+        System.out.println("\nUpdating: " + vec); 
         rs.updateInt("compute_id", compute_id);
         MorphologicalMatrix matrix = get_morph_matrix(vec);
+        System.out.println(matrix.getSettingPackage());
         CalcMasie calc = new CalcMasie(matrix);
         calc.run();
         HashMap<String, Float> results = calc.getResults();
+        System.out.println(results + "\n");
         rs.updateInt("compute_status", 2);
         rs.updateFloat("cost", results.get("Total Cost"));
         rs.updateFloat("team_mix", results.get("Team Mix Index"));
@@ -100,9 +102,10 @@ public class Learning2019OutputVectorGen {
         rs.updateRow();
     }
 
-    private void run_batch()
+    private int run_batch()
     throws SQLException
     {
+        int num_vectors = 0;
         try {
             String sql = 
                 "SELECT input_vector, compute_status, compute_id, " +
@@ -117,6 +120,7 @@ public class Learning2019OutputVectorGen {
             while(rs.next()){
                 String vec = rs.getString("input_vector");
                 udpate_vector(vec, rs);
+                num_vectors++;
             }
             rs.close();
             ps.close();
@@ -125,6 +129,7 @@ public class Learning2019OutputVectorGen {
             System.out.println("\n\nSQLException: " + e.getMessage());
             e.printStackTrace();
         }
+        return num_vectors;
     }
 
     public void run_iterations(int run_minutes)
@@ -134,16 +139,17 @@ public class Learning2019OutputVectorGen {
         Duration timeElapsed;
         long num_vectors = 0;
         System.out.println("Running Iterations...");
+        int num_run = 0;
         do {
-            run_batch();
-            num_vectors += BATCH_SIZE;
+            num_run = run_batch();
+            num_vectors += num_run;
             Instant end = Instant.now();
             timeElapsed = Duration.between(start, end);
             System.out.print("; "  + num_vectors + 
                 " vectors processed in: " 
                 + timeElapsed.toMillis() + " milliseconds" +
                 " (" + timeElapsed.toMinutes() + " minutes)");
-        } while (timeElapsed.toMinutes() < run_minutes);
+        } while ((timeElapsed.toMinutes() < run_minutes) && (num_run > 0));
         System.out.println("");
     }
 
