@@ -54,6 +54,7 @@ public class Learning2019GetAllOutputData {
             "input_vector", "compute_status", "input_wave", "compute_id", 
             "cost", "team_mix", "interaction_score", "walking_time"};
         final int num_cols = columns.length;
+        fw.write("ID,");
         for (int i = 0; i < num_cols; i++)
             fw.write("" + columns[i] + ",");
         fw.write("\n");
@@ -66,7 +67,10 @@ public class Learning2019GetAllOutputData {
             Statement stmt = conn.createStatement();
             stmt.setFetchSize(200);
             ResultSet rs = stmt.executeQuery(sql);
+            long id = 0;
             while(rs.next()){
+                id++;
+                fw.write(String.valueOf(id) + ",");
                 for (int i = 0; i < num_cols; i++)
                     fw.write(rs.getObject(columns[i]).toString() + ",");
                 fw.write("\n");
